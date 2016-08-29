@@ -4,9 +4,10 @@ import re
 import os
 
 savePath = os.path.join(os.getcwd(), 'xImages')
-def start(url):
-	page = urllib2.urlopen(url)
-	html = page.read()
+def start(url, page, startIndex):
+	targetURL = url + "/" + str(page)
+	pageContent = urllib2.urlopen(url)
+	html = pageContent.read()
 	reg = r'<a class="movie-box" href=".*">'
 	movieBoxRE = re.compile(reg)
 	tempStr = ''.join(re.findall(movieBoxRE, html))
@@ -18,6 +19,8 @@ def start(url):
 	if not os.path.exists(savePath):
 		os.mkdir(savePath)	# 创建根目录	
 	for idx, url in enumerate(linkArr):
+		if (idx < startIndex):
+			continue
 		openSingle(idx + 1, url, url.split('/')[-1])
 	print "所有页面爬取完成！"
 
@@ -28,7 +31,7 @@ def openSingle(index, url, name):
 	sampleBox = re.compile(reg)
 	tempStr = ''.join(re.findall(sampleBox, html))
 
-	print "正在爬去第" + str(index) + "个页面，番号：" + name + "..."
+	print "正在爬取第" + str(index) + "个页面，番号：" + name + "..."
 	imgReg = r'(?<=href=\").+?(?=\")|(?<=href=\').+?(?=\')'
 	linkArr = re.findall(imgReg, tempStr, re.I|re.S|re.M)
 	for url in linkArr:
@@ -48,10 +51,15 @@ def saveImg(imageURL, fileName):
 	f.close()
 
 # searchInfo = ""
-searchInfo = raw_input('输入搜索信息(不输入则爬取首页)：')
+searchInfo = raw_input('输入搜索信息(默认爬取首页)：')
+startIndex = raw_input('输入起始序号（默认1）：')
+if not startIndex:
+	startIndex = 0
+else:
+	startIndex = int(startIndex) - 1
 if searchInfo:
 	savePath = os.path.join(os.getcwd(), 'xImages-' + searchInfo)
-	start("https://www.javbus.com/search/" + searchInfo)
+	start("https://www.javbus.com/search/" + searchInfo, 1, startIndex)
 else:
-	start("https://www.javbus.com/");
+	start("https://www.javbus.com/page", 1, startIndex);
 	
