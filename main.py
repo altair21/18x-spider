@@ -27,12 +27,20 @@ def start(url, page, startIndex):
 def openSingle(index, url, name):
 	page = urllib2.urlopen(url)
 	html = page.read()
+	imgReg = r'(?<=href=\").+?(?=\")|(?<=href=\').+?(?=\')'
 	reg = r'<a class="sample-box" href=".*">'
 	sampleBox = re.compile(reg)
 	tempStr = ''.join(re.findall(sampleBox, html))
 
+	coverReg = r'<a class="bigImage" href=".*">'
+	cover = re.compile(coverReg)
+	coverTempUrl = re.findall(cover, html)[0]
+	coverUrl = re.findall(imgReg, coverTempUrl, re.I|re.S|re.M)[0]
+	coverExt = coverUrl.split('.')[-1]
+	coverPath = os.path.join(savePath, name + coverExt)
+	saveImg(coverUrl, coverPath)
+
 	print "正在爬取第" + str(index) + "个页面，番号：" + name + "..."
-	imgReg = r'(?<=href=\").+?(?=\")|(?<=href=\').+?(?=\')'
 	linkArr = re.findall(imgReg, tempStr, re.I|re.S|re.M)
 	for url in linkArr:
 		fileName = url.split('/')[-1]
@@ -44,6 +52,7 @@ def openSingle(index, url, name):
 		print name + '所有截图保存完毕，共' + str(len(linkArr)) + '张'
 
 def saveImg(imageURL, fileName):
+	# print imageURL
 	u = urllib2.urlopen(imageURL)
 	data = u.read()
 	f = open(fileName, 'wb')
