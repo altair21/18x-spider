@@ -36,7 +36,7 @@ def openSingle(index, url, name):
 	cover = re.compile(coverReg)
 	coverTempUrl = re.findall(cover, html)[0]
 	coverUrl = re.findall(imgReg, coverTempUrl, re.I|re.S|re.M)[0]
-	coverExt = coverUrl.split('.')[-1]
+	coverExt = '.' + coverUrl.split('.')[-1]
 	coverPath = os.path.join(savePath, name + coverExt)
 	saveImg(coverUrl, coverPath)
 
