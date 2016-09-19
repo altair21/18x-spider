@@ -6,8 +6,7 @@ import os
 savePath = os.path.join(os.getcwd(), 'xImages')
 def start(url, page, startIndex):
 	targetURL = url + "/" + str(page)
-	pageContent = a_urlopen(url)
-	html = pageContent.read()
+	html = readSource(url)
 	reg = r'<a class="movie-box" href=".*">'
 	movieBoxRE = re.compile(reg)
 	tempStr = ''.join(re.findall(movieBoxRE, html))
@@ -25,8 +24,7 @@ def start(url, page, startIndex):
 	print "所有页面爬取完成！"
 
 def openSingle(index, url, name):
-	page = a_urlopen(url)
-	html = page.read()
+	html = readSource(url)
 	imgReg = r'(?<=href=\").+?(?=\")|(?<=href=\').+?(?=\')'
 	reg = r'<a class="sample-box" href=".*">'
 	sampleBox = re.compile(reg)
@@ -52,12 +50,26 @@ def openSingle(index, url, name):
 		print name + '所有截图保存完毕，共' + str(len(linkArr)) + '张'
 
 def saveImg(imageURL, fileName):
-	# print imageURL
-	u = a_urlopen(imageURL)
-	data = u.read()
+	data = readSource(imageURL)
+	if not data:
+		return
 	f = open(fileName, 'wb')
 	f.write(data)
 	f.close()
+
+def readSource(url):
+	u = a_urlopen(url)
+	fails = 0
+	while True:
+		try:
+			if fails > 3:
+				break
+			data = u.read()
+			return data
+		except:
+			fails += 1
+			print '解析内容失败，正在重试 ',fails,' ',url
+	print '无法解析 ',url
 
 def a_urlopen(url):
 	fails = 0
@@ -71,7 +83,7 @@ def a_urlopen(url):
 		except:
 			fails += 1
 			print '网络异常，正在重试 ',fails,' ',url
-	print '无法解析 ',url
+	print '无法访问 ',url
 
 # searchInfo = ""
 searchInfo = raw_input('输入搜索信息(默认爬取首页)：')
