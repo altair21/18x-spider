@@ -6,7 +6,7 @@ import os
 savePath = os.path.join(os.getcwd(), 'xImages')
 def start(url, page, startIndex):
 	targetURL = url + "/" + str(page)
-	pageContent = urllib2.urlopen(url)
+	pageContent = a_urlopen(url)
 	html = pageContent.read()
 	reg = r'<a class="movie-box" href=".*">'
 	movieBoxRE = re.compile(reg)
@@ -25,7 +25,7 @@ def start(url, page, startIndex):
 	print "所有页面爬取完成！"
 
 def openSingle(index, url, name):
-	page = urllib2.urlopen(url)
+	page = a_urlopen(url)
 	html = page.read()
 	imgReg = r'(?<=href=\").+?(?=\")|(?<=href=\').+?(?=\')'
 	reg = r'<a class="sample-box" href=".*">'
@@ -53,11 +53,25 @@ def openSingle(index, url, name):
 
 def saveImg(imageURL, fileName):
 	# print imageURL
-	u = urllib2.urlopen(imageURL)
+	u = a_urlopen(imageURL)
 	data = u.read()
 	f = open(fileName, 'wb')
 	f.write(data)
 	f.close()
+
+def a_urlopen(url):
+	fails = 0
+	while True:
+		try:
+			if fails > 10:
+				break
+			req = urllib2.Request(url)
+			response = urllib2.urlopen(req, None, 25)
+			return response
+		except:
+			fails += 1
+			print '网络异常，正在重试 ',fails,' ',url
+	print '无法解析 ',url
 
 # searchInfo = ""
 searchInfo = raw_input('输入搜索信息(默认爬取首页)：')
@@ -70,5 +84,5 @@ if searchInfo:
 	savePath = os.path.join(os.getcwd(), 'xImages-' + searchInfo)
 	start("https://www.javbus.com/search/" + searchInfo, 1, startIndex)
 else:
-	start("https://www.javbus.com/page", 1, startIndex);
+	start("https://www.javbus.com/page", 1, startIndex)
 	
